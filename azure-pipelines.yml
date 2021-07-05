@@ -1,0 +1,43 @@
+stages:
+- stage: __default
+  jobs:
+  - job: Job_1
+    displayName: Issue 9184
+    pool:
+      name: Windows
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '14.x'
+    - task: Npm@1
+      inputs:
+        command: 'install'
+    - task: Docker@2
+      displayName: Build an image
+      inputs:
+        repository: 'aqua9184'
+        command: 'build'
+        Dockerfile: 'Dockerfile'
+        tags: '$(Build.BuildNumber)'
+        arguments: '--rm'
+    - task: CmdLine@2
+      inputs:
+        script: 'docker context inspect default'
+    - task: DownloadPackage@1
+      inputs:
+        packageType: 'upack'
+        feed: '/52be4058-ea11-4ea7-9a58-f6f325448ad5'
+        view: '4db6559d-056d-4091-85c8-c9aef6f6e240'
+        definition: '396a497f-da7e-4835-9775-1b5d8d1b4a77'
+        version: '0.0.1'
+        downloadPath: 'C:\Users\Administrator\agent\vsts-agent-win-2.187.2\_work\1\s\'
+    - task: aquasec.aquasec.showCommits.aquasecScanner@4
+      inputs:
+        image: 'aqua9184:$(Build.BuildNumber)'
+        scanType: 'local'
+        register: false
+        hideBase: false
+        showNegligible: false
+        windowsScannerVersion: 'Artifacts'
+        connection: 'csp-local'
+
